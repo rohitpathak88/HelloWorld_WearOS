@@ -5,6 +5,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.view.View;
@@ -100,7 +101,7 @@ public class MainActivity extends WearableActivity implements HttpRestCallback {
         mTextView.setText(message);
 
         if (!success){
-            mTextView.setTextColor(getResources().getColor(R.color.dark_red));
+            mTextView.setTextColor(ContextCompat.getColor(getBaseContext(), R.color.dark_red));
         }
 
     }
