@@ -11,7 +11,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.List;
 
-import static android.support.constraint.Constraints.TAG;
 
 import cz.msebera.android.httpclient.HttpEntity;
 import cz.msebera.android.httpclient.HttpResponse;
@@ -19,9 +18,7 @@ import cz.msebera.android.httpclient.NameValuePair;
 import cz.msebera.android.httpclient.client.ClientProtocolException;
 import cz.msebera.android.httpclient.client.entity.UrlEncodedFormEntity;
 import cz.msebera.android.httpclient.client.methods.HttpPost;
-import cz.msebera.android.httpclient.impl.client.CloseableHttpClient;
 import cz.msebera.android.httpclient.impl.client.DefaultHttpClient;
-import cz.msebera.android.httpclient.impl.client.HttpClientBuilder;
 
 public class HttpPostAsyncTask extends AsyncTask<String, Void, Void> {
 
