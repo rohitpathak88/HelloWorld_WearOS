@@ -9,27 +9,36 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 
 import static android.support.constraint.Constraints.TAG;
 
+import cz.msebera.android.httpclient.HttpEntity;
+import cz.msebera.android.httpclient.HttpResponse;
+import cz.msebera.android.httpclient.NameValuePair;
+import cz.msebera.android.httpclient.client.ClientProtocolException;
+import cz.msebera.android.httpclient.client.HttpClient;
+import cz.msebera.android.httpclient.client.entity.UrlEncodedFormEntity;
+import cz.msebera.android.httpclient.client.methods.HttpPost;
+import cz.msebera.android.httpclient.client.utils.URLEncodedUtils;
+import cz.msebera.android.httpclient.impl.client.DefaultHttpClient;
+import cz.msebera.android.httpclient.message.BasicNameValuePair;
 
 public class HttpPostAsyncTask extends AsyncTask<String, Void, Void> {
 
     // This is the JSON body of the post
-    JSONObject postData;
+    List<NameValuePair> postData;
     RequestType type;
     HttpRestCallback callback;
-
+    static InputStream inputStream = null;
 
     // This is a constructor that allows you to pass in the JSON body
-    public HttpPostAsyncTask(Map<String, String> postData, RequestType type, HttpRestCallback callback) {
-        if (postData != null) {
-            this.postData = new JSONObject(postData);
-        }
-
+    public HttpPostAsyncTask(List<NameValuePair>  postData, RequestType type, HttpRestCallback callback) {
+        this.postData = postData;
         this.type = type;
         this.callback = callback;
     }
@@ -42,35 +51,25 @@ public class HttpPostAsyncTask extends AsyncTask<String, Void, Void> {
             // This is getting the url from the string we passed in
             URL url = new URL(params[0]);
 
-            // Create the urlConnection
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            // Making HTTP request
+            try {
+                // Making HTTP request
 
+                    DefaultHttpClient httpClient = new DefaultHttpClient();
+                    HttpPost httpPost = new HttpPost(url.toString());
+                    httpPost.setEntity(new UrlEncodedFormEntity(postData));
 
-            urlConnection.setDoInput(true);
-            urlConnection.setDoOutput(true);
+                    HttpResponse httpResponse = httpClient.execute(httpPost);
+                    HttpEntity httpEntity = httpResponse.getEntity();
+                    inputStream = httpEntity.getContent();
 
-            urlConnection.setRequestProperty("Content-Type", "application/json");
-
-            urlConnection.setRequestMethod("POST");
-
-
-            // OPTIONAL - Sets an authorization header
-            urlConnection.setRequestProperty("Authorization", "someAuthString");
-
-            Log.d("My App", "Start 2....");
-
-            // Send the post body
-            if (this.postData != null) {
-                OutputStreamWriter writer = new OutputStreamWriter(urlConnection.getOutputStream());
-                writer.write(postData.toString());
-                writer.flush();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } catch (ClientProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-
-            int statusCode = urlConnection.getResponseCode();
-
-            if (statusCode ==  200) {
-
-                InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
 
                 Log.d("My App", "Start 3....");
 
@@ -102,10 +101,7 @@ public class HttpPostAsyncTask extends AsyncTask<String, Void, Void> {
 
 
 
-            } else {
-                // Status code is not 200
-                // Do something to handle the error
-            }
+
 
         } catch (Exception e) {
             Log.d(TAG, e.getLocalizedMessage());

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
@@ -12,17 +11,20 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.wearable.DataApi;
-import com.google.android.gms.wearable.PutDataMapRequest;
-import com.google.android.gms.wearable.PutDataRequest;
-import com.google.android.gms.wearable.Wearable;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.TimeZone;
+
+import cz.msebera.android.httpclient.NameValuePair;
+import cz.msebera.android.httpclient.message.BasicNameValuePair;
+
 
 public class MainActivity extends WearableActivity implements HttpRestCallback {
 
@@ -42,8 +44,6 @@ public class MainActivity extends WearableActivity implements HttpRestCallback {
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("My App", "Start....");
-
                 testAPI();
             }
         });
@@ -53,6 +53,11 @@ public class MainActivity extends WearableActivity implements HttpRestCallback {
 
     }
 
+    private static String getISO8601StringForDate(Date date) {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return dateFormat.format(date);
+    }
 
     //checks to see if we are online
     protected static boolean isOnline(Activity activity){
@@ -69,29 +74,57 @@ public class MainActivity extends WearableActivity implements HttpRestCallback {
 
     public void testAPI(){
 
-        Log.d("My App", "Start 0....");
-
         if(isOnline(this)) {
 
-            Log.d("My App", "Start 1....");
+            Date now = new Date();
 
-            Map<String, String> postData = new HashMap<>();
-            postData.put("timestamp", "2019-06-17T15:56:02Z");
-            HttpPostAsyncTask task = new HttpPostAsyncTask(postData, RequestType.REQUEST_TYPE_1, this);
-            task.execute("http://yin2.schwarzsoftware.com.au/cgi-bin/hello_world.py");
+            String url = "http://yin2.schwarzsoftware.com.au/cgi-bin/hello_world.py";
+
+            List<NameValuePair> namevaluepair = new ArrayList<NameValuePair>(1);
+
+            namevaluepair.add(new BasicNameValuePair("timestamp", getISO8601StringForDate(now)));
+
+            HttpPostAsyncTask task = new HttpPostAsyncTask(namevaluepair, RequestType.REQUEST_TYPE_1, this);
+
+            task.execute(url);
+
         }else{
             //log error
+            mTextView.setText("Check Network Connection");
         }
     }
 
+    public void updateUI(String message, Boolean success){
+
+
+        mTextView.setText(message);
+
+        if (!success){
+            mTextView.setTextColor(getResources().getColor(R.color.dark_red));
+        }
+
+    }
+
     @Override
-    public void completionHandler(Boolean success, RequestType type, Object object) {
+    public void completionHandler(Boolean success, RequestType type, final JSONObject object) {
         switch (type) {
             case REQUEST_TYPE_1:
                 // Do UI updates ON THE UI THREAD needed for response to REQUEST_TYPE_1 using the object that sent here
                 this.runOnUiThread(new Runnable() {
                     public void run() {
                         // UI updates here
+                        try{
+
+                            String msg = object.getString("message");
+                            boolean success = object.getBoolean("success");
+
+                            updateUI(msg,success);
+
+                        } catch (Throwable t) {
+
+                            Log.e("My App", "Could not parse malformed JSON: \"" + object + "\"");
+
+                        }
                     }
                 });
 

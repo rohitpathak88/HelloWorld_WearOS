@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">http://yin2.schwarzsoftware.com.au/cgi-bin/hello_world.py</domain>
+    </domain-config>
+</network-security-config>
