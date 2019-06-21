@@ -55,6 +55,17 @@ public class HttpPostAsyncTask extends AsyncTask<String, Void, Void> {
                 HttpEntity httpEntity = httpResponse.getEntity();
                 inputStream = httpEntity.getContent();
 
+
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } catch (ClientProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            try{
+
                 String response = convertInputStreamToString(inputStream);
 
                 JSONObject obj = new JSONObject(response);
@@ -70,17 +81,9 @@ public class HttpPostAsyncTask extends AsyncTask<String, Void, Void> {
                     default:
                         break;
                 }
-
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            } catch (ClientProtocolException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (Throwable t) {
+            }catch (Throwable t) {
                 Log.e("My App", "Could not parse malformed JSON");
             }
-
 
         return null;
     }
